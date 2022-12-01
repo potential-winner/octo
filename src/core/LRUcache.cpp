@@ -1,63 +1,40 @@
-#include <list>
-#include <unordered_map>
-using namespace std;
+#include "LRUcache.hpp"
 
-class LRUCache
+namespace octo::core
 {
-  public:
-    unordered_map<int, int> map;
-    int cap;
-    list<int> q;
-    LRUCache(int capacity)
-    {
-        cap = capacity;
-    }
-
-    int get(int key)
-    {
-        if (map.count(key) != 0) {
-            q.remove(key);
-            q.push_back(key);
-            return map[key];
-        } else {
-            return -1;
-        }
-    }
-
-    void put(int key, int value)
-    {
-        if (map.size() < cap) {
-            map[key] = value;
-            q.remove(key);
-            q.push_back(key);
-        } else if (map.count(key) == 0) {
-            map.erase(q.front());
-            q.pop_front();
-            map[key] = value;
-            q.push_back(key);
-        } else {
-            map[key] = value;
-            q.remove(key);
-            q.push_back(key);
-        }
-    }
-};
-
-int main()
+int LRUcache::get(int key)
 {
-    LRUCache lru = LRUCache(2);
-    lru.get(2);
-    lru.put(2, 6);
-    lru.get(1);
-    lru.put(1, 5);
-    lru.put(1, 2);
-    lru.get(1);
-    lru.get(2);
+    auto it = map.find(key);
+    if (it != map.end()) {
+        auto queue_it = it->second;
+        q.splice(q.begin(), q, queue_it);
+        return queue_it->value;
+    }
+    return -1;
 }
 
-/**
- * Your LRUCache object will be instantiated and called as such:
- * LRUCache* obj = new LRUCache(capacity);
- * int param_1 = obj->get(key);
- * obj->put(key,value);
- */
+void LRUcache::AddItem(int key, int value)
+{
+    q.push_front(KeyValuePair{key, value}); // put item in the queue
+    auto queue_it = q.begin();              // got iterator to the previously inserted item
+    map.emplace(key, std::move(queue_it));  // save iterator to previously inserted item in the hash table
+}
+
+void LRUcache::put(int key, int value)
+{
+    auto it = map.find(key);
+    if (it != map.end()) {
+        auto queue_it = it->second;
+        q.splice(q.begin(), q, queue_it);
+        q.front().value = value;
+    } else if (q.size() < capacity_) {
+        AddItem(key, value);
+    } else {
+        int least_recently_used_key = q.back().key;
+        map.erase(least_recently_used_key);
+        q.pop_back();
+
+        AddItem(key, value);
+    }
+}
+} // namespace octo::core
