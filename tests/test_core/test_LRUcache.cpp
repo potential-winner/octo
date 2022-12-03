@@ -4,10 +4,11 @@
 
 using namespace octo::core;
 
-TEST_CASE("Test inverted index")
+TEST_CASE("Test LRU cache")
 {
     LRUcache LRU(2);
-
+    LRU.put(1, 1);
+    LRU.put(2, 2);
     SECTION("Put items")
     {
         REQUIRE_NOTHROW(LRU.put(1, 1));
