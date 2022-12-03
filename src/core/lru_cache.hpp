@@ -1,31 +1,32 @@
 #pragma once
 
+#include <cstddef>
 #include <list>
 #include <unordered_map>
 
 namespace octo::core
 {
-class LRUcache
+class LruCache
 {
-  public:
+  private:
     struct KeyValuePair {
         int key;
         int value;
     };
-    using Queue = std::list<KeyValuePair>;
+    using Order = std::list<KeyValuePair>;
 
-    Queue q;
-    std::unordered_map<int, Queue::iterator> map;
+  private:
+    Order order;
+    std::unordered_map<int, Order::iterator> map;
     std::size_t capacity_;
 
-    LRUcache(int capacity)
-        : capacity_(capacity)
-    {
-        map.reserve(capacity);
-    }
+  private:
+    void addItem(int key, int value);
+
+  public:
+    LruCache(std::size_t capacity);
 
     int get(int key);
-    void AddItem(int key, int value);
     void put(int key, int value);
 };
 } // namespace octo::core
