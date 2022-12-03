@@ -1,4 +1,4 @@
-#include "LRUcache.hpp"
+#include "lru_cache.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
